@@ -1,0 +1,14 @@
+server:
+  port: 3000
+
+db:
+  type: 'mysql'
+  host: '139.150.74.240'
+  username: 'nestjs'
+  password: 'qwer1234!@#'
+  port: 3306
+  database: 'nestjsDB'
+  synchronize: true
+
+jwt:
+  secret: '1234secretkey1234'
