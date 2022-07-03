@@ -15,6 +15,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {
+    // 토큰이 유효한지 검사
+
     // secretOrKey - 유효한 토큰인지
     // jwtFormatRequest - 토큰위치
     super({
@@ -36,6 +38,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException();
     }
+
+    delete user.password;
 
     return user;
   }

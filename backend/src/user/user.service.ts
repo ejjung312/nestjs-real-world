@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { User } from './user.entity';
+import { UserRO } from './user.interface';
 
 @Injectable()
 export class UserService {
@@ -15,6 +16,16 @@ export class UserService {
     private userRepository: Repository<User>,
     private jwtService: JwtService,
   ) {}
+
+  async findByEmail(email: string): Promise<UserRO> {
+    const user = await this.userRepository.findOne({
+      where: {
+        email,
+      },
+    });
+
+    return this.buildUserRO(user);
+  }
 
   async create(dto: CreateUserDto): Promise<void> {
     const { username, email, password } = dto;
