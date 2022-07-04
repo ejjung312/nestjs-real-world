@@ -3,9 +3,10 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { validate } from 'class-validator';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './user.entity';
 import { UserRO } from './user.interface';
 
@@ -25,6 +26,27 @@ export class UserService {
     });
 
     return this.buildUserRO(user);
+  }
+
+  async update(id: number, dto: UpdateUserDto) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    delete user.password;
+    // delete user.favorites;
+
+    // 객체 합치기
+    const newUser = Object.assign(user, dto);
+    // save - 엔티티가 존재하면 update, 없으면 insert
+    // 저장된 엔티티가 리턴됨
+    return await this.userRepository.save(newUser);
+  }
+
+  async delete(email: string): Promise<DeleteResult> {
+    return await this.userRepository.delete({ email });
   }
 
   async create(dto: CreateUserDto): Promise<void> {

@@ -1,10 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
+  Param,
   Post,
+  Put,
   UseGuards,
   UsePipes,
   ValidationPipe
@@ -12,6 +15,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './user.decorator';
 import { UserRO } from './user.interface';
 import { UserService } from './user.service';
@@ -25,6 +29,21 @@ export class UserController {
   @UseGuards(AuthGuard())
   async findMe(@User('email') email: string): Promise<UserRO> {
     return await this.userService.findByEmail(email);
+  }
+
+  // 회원 업데이트
+  @Put()
+  async update(
+    @User('id') userId: number,
+    @Body('user') userData: UpdateUserDto,
+  ) {
+    return await this.userService.update(userId, userData);
+  }
+
+  @Delete('/:slug')
+  async delete(@Param() params) {
+    // params에 slug key로 값이 들어옴 -> { slug: 'ej@gmail.com' }
+    return await this.userService.delete(params.slug);
   }
 
   // 회원가입
