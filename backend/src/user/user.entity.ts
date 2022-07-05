@@ -1,7 +1,15 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { IsEmail } from 'class-validator';
-import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Article } from 'src/article/article.entity';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn
+} from 'typeorm';
 
 @Entity('user')
 export class User {
@@ -35,4 +43,16 @@ export class User {
       throw new InternalServerErrorException();
     }
   }
+
+  /* 
+    ManyToMany
+    - 엔티티 간 관계 설정
+    - junction table (두 엔티티 간 관계 테이블) 생성됨
+
+    JoinTable
+    - N:M 관계에서 소유자 측을 지정하는데 사용
+  */
+  @ManyToMany((type) => Article)
+  @JoinTable()
+  favorites: Article[];
 }

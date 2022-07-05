@@ -8,7 +8,8 @@ import { ProfileData, ProfileRO } from './profile.interface';
 @Injectable()
 export class ProfileService {
   constructor(
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     @InjectRepository(FollowsEntity)
     private readonly followsRepository: Repository<FollowsEntity>,
   ) {}
@@ -75,7 +76,7 @@ export class ProfileService {
       },
     });
 
-    if (followerUser.email === followerEmail) {
+    if (followingUser.email === followerEmail) {
       throw new HttpException(
         'FollowerEmail and FollowingId cannot be equal.',
         HttpStatus.BAD_REQUEST,
@@ -101,6 +102,40 @@ export class ProfileService {
       bio: followingUser.bio,
       image: followingUser.image,
       following: true,
+    };
+
+    return { profile };
+  }
+
+  async unFollow(followerId: number, username: string): Promise<ProfileRO> {
+    if (!followerId || !username) {
+      throw new HttpException(
+        'FollowerId and username not provided.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const followingUser = await this.userRepository.findOne({
+      where: {
+        username,
+      },
+    });
+
+    if (followingUser.id === followerId) {
+      throw new HttpException(
+        'FollowerId and FollowingId cannot be equal.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const followingId = followingUser.id;
+    await this.followsRepository.delete({ followerId, followingId });
+
+    const profile: ProfileData = {
+      username: followingUser.username,
+      bio: followingUser.bio,
+      image: followingUser.image,
+      following: false,
     };
 
     return { profile };

@@ -14,8 +14,8 @@ import { UserRO } from './user.interface';
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
-    private jwtService: JwtService,
+    private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async findByEmail(email: string): Promise<UserRO> {
