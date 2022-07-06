@@ -1,4 +1,14 @@
-import { BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/user/user.entity';
+import {
+  BeforeUpdate,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn
+} from 'typeorm';
+import { Comment } from './comment.entity';
 
 @Entity('article')
 export class Article {
@@ -35,4 +45,17 @@ export class Article {
   */
   @Column('simple-array')
   tagList: string[];
+
+  // User(1) : Article(N)
+  @ManyToOne((type) => User, (user) => user.articles)
+  author: User;
+
+  // article은 여러개의 comment를 가짐
+  // 타겟엔티티, 관계지정, 하위 엔티티까지 가져옴
+  @OneToMany((type) => Comment, (comment) => comment.article, { eager: true })
+  @JoinColumn()
+  comments: Comment[];
+
+  @Column({ default: 0 })
+  favoriteCount: number;
 }

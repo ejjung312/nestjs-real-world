@@ -8,6 +8,7 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn
 } from 'typeorm';
 
@@ -55,4 +56,8 @@ export class User {
   @ManyToMany((type) => Article)
   @JoinTable()
   favorites: Article[];
+
+  // 하나의 user는 여러개의 article을 가짐
+  @OneToMany((type) => Article, (article) => article.author)
+  articles: Article[];
 }
