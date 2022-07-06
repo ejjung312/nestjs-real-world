@@ -6,12 +6,15 @@ import {
   Param,
   Post,
   Put,
-  Query
+  Query,
+  UsePipes,
+  ValidationPipe
 } from '@nestjs/common';
 import { User } from 'src/user/user.decorator';
-import { ArticleRO, ArticlesRO } from './article.interface';
+import { ArticleRO, ArticlesRO, CommentsRO } from './article.interface';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
+import { CreateCommentDto } from './dto/create-comment';
 
 @Controller('article')
 export class ArticleController {
@@ -65,5 +68,25 @@ export class ArticleController {
   @Delete(':slug/favorite')
   async unFavorite(@User('id') userId: number, @Param('slug') slug: string) {
     return await this.articleService.unFavorite(userId, slug);
+  }
+
+  @Get(':slug/comments')
+  async findComments(@Param('slug') slug: string): Promise<CommentsRO> {
+    return await this.articleService.findComments(slug);
+  }
+
+  @Post(':slug/comments')
+  async createComment(
+    @Param('slug') slug: string,
+    @Body('comment') commentData: CreateCommentDto,
+  ) {
+    return await this.articleService.addComment(slug, commentData);
+  }
+
+  @Delete(':slug/comments/:id')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async deleteComment(@Param() params: { slug: string; id: number }) {
+    const { slug, id } = params;
+    return await this.articleService.deleteComment(slug, id);
   }
 }

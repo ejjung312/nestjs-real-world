@@ -5,14 +5,18 @@ import { FollowsEntity } from 'src/profile/follows.entity';
 import { User } from 'src/user/user.entity';
 import { DeleteResult, Repository } from 'typeorm';
 import { Article } from './article.entity';
-import { ArticleRO, ArticlesRO } from './article.interface';
+import { ArticleRO, ArticlesRO, CommentsRO } from './article.interface';
+import { Comment } from './comment.entity';
 import { CreateArticleDto } from './dto/create-article.dto';
+import { CreateCommentDto } from './dto/create-comment';
 
 @Injectable()
 export class ArticleService {
   constructor(
     @InjectRepository(Article)
     private readonly articleRepository: Repository<Article>,
+    @InjectRepository(Comment)
+    private readonly commentRepository: Repository<Comment>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(FollowsEntity)
@@ -218,6 +222,65 @@ export class ArticleService {
     }
 
     return { article };
+  }
+
+  async findComments(slug: string): Promise<CommentsRO> {
+    const article = await this.articleRepository.findOne({
+      where: {
+        slug,
+      },
+    });
+
+    return { comments: article.comments };
+  }
+
+  async addComment(
+    slug: string,
+    commentData: CreateCommentDto,
+  ): Promise<ArticleRO> {
+    let article = await this.articleRepository.findOne({
+      where: {
+        slug,
+      },
+    });
+
+    const comment = new Comment();
+    comment.body = commentData.body;
+
+    article.comments.push(comment);
+
+    await this.commentRepository.save(comment);
+    article = await this.articleRepository.save(article);
+
+    return { article };
+  }
+
+  async deleteComment(slug: string, id: number) {
+    let article = await this.articleRepository.findOne({
+      where: {
+        slug,
+      },
+    });
+
+    const comment = await this.commentRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    const deleteIndex = article.comments.findIndex(
+      (_comment) => _comment.id === comment.id,
+    );
+
+    if (deleteIndex >= 0) {
+      const deleteComments = article.comments.splice(deleteIndex, 1);
+      await this.commentRepository.delete(deleteComments[0].id);
+      article = await this.articleRepository.save(article);
+
+      return { article };
+    } else {
+      return { article };
+    }
   }
 
   slugify(title: string) {
