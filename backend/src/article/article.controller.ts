@@ -10,6 +10,12 @@ import {
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags
+} from '@nestjs/swagger';
 import { User } from 'src/user/user.decorator';
 import { ArticleRO, ArticlesRO, CommentsRO } from './article.interface';
 import { ArticleService } from './article.service';
@@ -17,10 +23,21 @@ import { CreateArticleDto } from './dto/create-article.dto';
 import { CreateCommentDto } from './dto/create-comment';
 
 @Controller('article')
+@ApiTags('Article API')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
 
   @Get()
+  @ApiOperation({
+    summary: '게시물 API',
+    description: '전체 게시물 가져오기 API',
+  })
+  @ApiOkResponse({ description: '전체 게시물을 조회한다.' })
+  @ApiQuery({
+    name: 'query',
+    required: false,
+    description: '조회 조건을 입력한다.',
+  })
   async findAll(@Query() query): Promise<ArticlesRO> {
     return await this.articleService.findAll(query);
   }

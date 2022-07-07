@@ -4,6 +4,7 @@ import { ArticleModule } from './article/article.module';
 import { typeOrmConfig } from './configs/typeorm.config';
 import { ProfileModule } from './profile/profile.module';
 import { UserModule } from './user/user.module';
+import { TagModule } from './tag/tag.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { UserModule } from './user/user.module';
     UserModule,
     ProfileModule,
     ArticleModule,
+    TagModule,
   ],
   controllers: [],
   providers: [],
