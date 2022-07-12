@@ -20,7 +20,8 @@ const jwtConfig = config.get('jwt');
     JwtModule.register({
       secret: jwtConfig.secret,
     }),
-    // 현재 범위(scope)에 레포지토리 등록, UsersService에 UsersRepository를 주입 가능
+    // 현재 범위(scope)에 레포지토리 등록, UsersService에 UsersRepository를 주입 가능.
+    // 모듈 내에서 사용할 저장소 등록
     TypeOrmModule.forFeature([User]),
   ],
   providers: [UserService, JwtStrategy], // JwtStrategy가 Auth 모듈에서 사용 할 수 있게 등록
