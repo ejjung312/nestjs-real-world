@@ -5,6 +5,9 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Inject,
+  InternalServerErrorException,
+  LoggerService,
   Param,
   Post,
   Put,
@@ -21,6 +24,7 @@ import {
   ApiParam,
   ApiTags
 } from '@nestjs/swagger';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -31,7 +35,11 @@ import { UserService } from './user.service';
 @Controller('user')
 @ApiTags('User API')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService, // 전역로거
+  ) {}
 
   // 토큰에서 회원정보 가져오기
   @Get()
@@ -83,6 +91,7 @@ export class UserController {
   @ApiCreatedResponse({ description: 'User를 생성한다.', type: CreateUserDto })
   @ApiBody({ type: CreateUserDto })
   async create(@Body('user') userData: CreateUserDto): Promise<void> {
+    this.printLoggerServiceLog(userData);
     return await this.userService.create(userData);
   }
 
@@ -106,5 +115,20 @@ export class UserController {
     const user = { email, token, username, bio, image };
 
     return { user };
+  }
+
+  ////////////////////////////////////
+  // 전역로거
+  private printLoggerServiceLog(dto) {
+    try {
+      throw new InternalServerErrorException('test');
+    } catch (error) {
+      this.logger.error('error: ' + JSON.stringify(dto), error.stack);
+    }
+
+    this.logger.warn('warn: ' + JSON.stringify(dto));
+    this.logger.log('log: ' + JSON.stringify(dto));
+    this.logger.verbose('verbose: ' + JSON.stringify(dto));
+    this.logger.debug('debug: ' + JSON.stringify(dto));
   }
 }
