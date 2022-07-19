@@ -15,6 +15,7 @@ import {
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBody,
@@ -25,9 +26,11 @@ import {
   ApiTags
 } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { CreateUserCommand } from './create-user.command';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { GetUserInfoQuery } from './query/get-user-info.query';
 import { User } from './user.decorator';
 import { UserRO } from './user.interface';
 import { UserService } from './user.service';
@@ -39,6 +42,8 @@ export class UserController {
     private userService: UserService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService, // 전역로거
+    private commandBus: CommandBus,
+    private queryBus: QueryBus,
   ) {}
 
   // 토큰에서 회원정보 가져오기
@@ -50,7 +55,10 @@ export class UserController {
   })
   @ApiOkResponse({ description: '로그인 한 User 정보를 얻는다.' })
   async findMe(@User('email') email: string): Promise<UserRO> {
-    return await this.userService.findByEmail(email);
+    // return await this.userService.findByEmail(email);
+    const getUserInfoQuery = new GetUserInfoQuery(email);
+
+    return this.queryBus.execute(getUserInfoQuery);
   }
 
   // 회원 업데이트
@@ -92,7 +100,16 @@ export class UserController {
   @ApiBody({ type: CreateUserDto })
   async create(@Body('user') userData: CreateUserDto): Promise<void> {
     this.printLoggerServiceLog(userData);
-    return await this.userService.create(userData);
+
+    // https://github.com/dextto/book-nestjs-backend/tree/main/user-service/ch16-cqrs/src/users
+    const { username, email, password } = userData;
+    const command = new CreateUserCommand(username, email, password);
+
+    // const command = new CreateUserCommand(userData);
+
+    return this.commandBus.execute(command);
+
+    // return await this.userService.create(userData);
   }
 
   // 로그인
